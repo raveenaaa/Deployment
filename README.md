@@ -1,6 +1,16 @@
-# Workshop: Deployments
+# Deployment
 
-In this workshop, we'll cover the basics of setting up a barebone deployment pipeline, in support of a green-blue deployment strategy.  We will be able to build upon this exercise in the upcoming homework and DEPLOYMENT milestone.
+In this workshop, we'll cover the basics of setting up a barebone deployment pipeline, in support of a green-blue deployment strategy.
+
+*TODO:* Diagram for pipeline.
+
+### Blue-green deployment
+
+Text about blue-green deployment.
+
+## Workshop
+
+### Before you start
 
 To start with, you'll need some files in this repo to help setup the blue-green infrastructure.
 
@@ -97,51 +107,3 @@ Have a heartbeat that checks every 30 second for a http 500, and if so, will swi
 This idea can be generalized to be triggered by any other monitoring/alerts/automated testing (during staging). E.g., See how to use [toobusy](https://hacks.mozilla.org/2013/01/building-a-node-js-server-that-wont-melt-a-node-js-holiday-season-part-5/).
 
 
-### Advanced: Docker deploy
-
-Instead of sending over the files and building, you can modify pipeline to build a docker image that is pushed to a registery and deployed.
-
-##### Registry
-
-Start a private registry on port 5000.
-
-```
-docker run -d -p 5000:5000 --restart=always --name registry registry:2
-```
-
-More information about setting up a [TLS-secured registry](https://docs.docker.com/registry/deploying/), which is remotely accessible.
-
-##### Build a container for a node js app.
-
-```
-cd App
-docker build -t ncsu-app .
-docker run -p 50100:8080 -d --name app ncsu-app
-docker logs <containerid>
-```
-
-##### Deploy to registry
-
-If successful, can deploy to a private registry.
-
-```
-docker tag ncsu-app localhost:5000/ncsu:latest
-docker push localhost:5000/ncsu:latest
-```
-
-##### Server update script
-
-A script like this can run after a git hook or deploy command. The server will pull from registry, stop existing app container and run new instance.
-
-```
-docker pull localhost:5000/ncsu:latest  
-docker stop app  
-docker rm app
-docker rmi localhost:5000/ncsu:current  
-docker tag localhost:5000/ncsu:latest localhost:5000/ncsu:current
-docker run -p 50100:8080 -d --name app localhost:5000/ncsu:latest  
-```
-
-##### Test
-
-`curl -i localhost:50100`
