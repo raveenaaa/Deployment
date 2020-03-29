@@ -6,7 +6,7 @@ var request = require("request");
 var GREEN = 'http://127.0.0.1:5060';
 var BLUE  = 'http://127.0.0.1:9090';
 
-var TARGET = GREEN;
+var TARGET = BLUE;
 
 var infrastructure =
 {
@@ -23,7 +23,7 @@ var infrastructure =
     server.listen(8080);
 
     // Launch green slice
-    exec('forever start deploy/blue-www/main.js 9090', function(err, out, code) 
+    exec('forever start --watch deploy/blue-www/main.js start 9090', function(err, out, code) 
     {
       console.log("attempting to launch blue slice");
       if (err instanceof Error)
@@ -35,7 +35,7 @@ var infrastructure =
     });
 
     // Launch blue slice
-    exec('forever start deploy/green-www/main.js 5060', function(err, out, code) 
+    exec('forever start --watch deploy/green-www/main.js start 5060', function(err, out, code) 
     {
       console.log("attempting to launch green slice");
       if (err instanceof Error)
@@ -46,12 +46,22 @@ var infrastructure =
       }
     });
 
-//setTimeout
-//var options = 
-//{
-//  url: "http://localhost:8080",
-//};
-//request(options, function (error, res, body) {
+    var options = 
+    {
+    url: "http://localhost:8080",
+    };
+    setInterval( function()
+    {
+      request(options, function (error, res, body) 
+      {
+        console.log(`Heartbeat ${res.statusCode}`)
+        if( res.statusCode == 500 )
+        {
+          console.log(`Error detected switching to GREEN`);
+          TARGET = GREEN;
+        }
+      });
+    }, 5000);
 
   },
 
