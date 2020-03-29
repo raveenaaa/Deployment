@@ -58,7 +58,7 @@ chmod +x post-receive
 Place the following content inside:
 
     GIT_WORK_TREE=/home/vagrant/meow.io/green-www git checkout -f
-    npm install
+    cd /home/vagrant/meow.io/green-www && npm install
 
 Repeat for blue.
 
@@ -66,15 +66,15 @@ Repeat for blue.
 
 Clone the [app repo](https://github.com/CSC-DevOps/App), and set the following remotes.  See help on [file protocol syntax](http://en.wikipedia.org/wiki/File_URI_scheme#Format).
 
-    git remote add blue http//192.168.44.25/home/vagrant/meow.io/blue.git
-    git remote add green http://192.168.44.30/home/vagrant/meow.io/green.git
+    git remote add blue ssh://vagrant@192.168.44.25/home/vagrant/meow.io/blue.git
+    git remote add green ssh://vagrant@192.168.44.30/home/vagrant/meow.io/green.git
 
 You can now push changes in the following manner.
 
-    git push green master
-    git push blue master
+    GIT_SSH_COMMAND="ssh -i ~/.bakerx/insecure_private_key" git push green master
+    GIT_SSH_COMMAND="ssh -i ~/.bakerx/insecure_private_key" git push blue master
 
-*Note: You may have to create a simple commit before pushing.*
+Here, by setting `GIT_SSH_COMMAND`, we are telling git to use our ssh key for connecting to the VM.
 
 ### Testing deployment
 
