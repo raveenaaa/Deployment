@@ -16,6 +16,9 @@ To start with, you'll need some files in this repo to help setup the blue-green 
 
     git clone https://github.com/CSC-DevOps/Deployment.git
     npm install
+    # Setup two virtual machines
+    node index setup
+
 
 ### Initializing our endpoints.
 
