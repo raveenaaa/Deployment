@@ -19,56 +19,62 @@ To start with, you'll need some files in this repo to help setup the blue-green 
     # Setup two virtual machines
     node index setup
 
+### Setting up our Pipeline
 
-### Initializing our endpoints.
+We will first setup a basic pipeline that will have two deployment endpoints for our application.
 
-We'll create two endpoints for our deployment, a "green" endpoint for our baseline, and a "blue" endpoint for our test commits.  We will be using git repositories to help with *copying over bits*.  [See guide](http://toroid.org/ams/git-website-howto) for more details.
+### Initializing our deployment endpoints.
 
-Create a folder structure as follows:
+We'll create two endpoints for our deployment, a "green" endpoint for our baseline, and a "blue" endpoint for our new production code.
 
-* deploy/
-  * blue.git/
-  * blue-www/
-  * green.git/
-  * green-www/
+Inside green, `bakerx ssh green`, run:
 
-To ensure we have a git repo that will always have files that reflect the most current state of the repo, we will use a "bare" repository, which will not have a working tree.  Using a hook script, the changes will then be checked out to public directory.
+```bash
+mkdir -p meow.io/green.git meow.io/green-www
+cd meow.io/green.git
+git init --bare
+```
 
-    cd deploy/green.git
-    git init --bare
-    cd ..
-    cd blue.git
-    git init --bare
+Inside blue, `bakerx ssh blue`, run:
+
+```bash
+mkdir -p meow.io/blue.git meow.io/blue-www
+cd meow.io/blue.git
+git init --bare
+```
 
 ##### Post-Receive Hook
 
-Inside `green.git/hooks/` inside a `post-receive` file, place the following:
+Like our pipelines workshop, we will use a bare repository and a hook script to receive and checkout changes pushed to our bare repository.
 
-    GIT_WORK_TREE=<...path...>/green-www/ git checkout -f
+Inside green, `bakerx ssh green`, create a hook file:
+
+```bash
+cd meow.io/green.git/hooks/
+touch post-receive
+chmod +x post-receive
+```
+
+Place the following content inside:
+
+    GIT_WORK_TREE=/home/vagrant/meow.io/green-www git checkout -f
+    npm install
 
 Repeat for blue.
-
-**Hints**
-
-* You must create the *-www folder manually.
-* You may have to add executable permissions using in *nix systems `chmod +x post-receive`.
-* **Ensure that there is a script header**, such as `#!/bin/sh`, on the first line.
-* For the purpose of this workshop, `<...path...>` refers to the absolute path of your folder.
-* It will not work the first time.
 
 ### Deploying Commits and Copying Bits
 
 Clone the [app repo](https://github.com/CSC-DevOps/App), and set the following remotes.  See help on [file protocol syntax](http://en.wikipedia.org/wiki/File_URI_scheme#Format).
 
-    git remote add blue file://<...path...>/blue.git
-    git remote add green file://<...path...>/green.git
+    git remote add blue http//192.168.44.25/home/vagrant/meow.io/blue.git
+    git remote add green http://192.168.44.30/home/vagrant/meow.io/green.git
 
 You can now push changes in the following manner.
 
     git push green master
     git push blue master
 
-You may have to create a simple commit before pushing.
+*Note: You may have to create a simple commit before pushing.*
 
 ### Testing deployment
 
