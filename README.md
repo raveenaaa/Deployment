@@ -14,7 +14,8 @@ Text about blue-green deployment.
 
 To start with, you'll need some files in this repo to help setup the blue-green infrastructure.
 
-    git clone https://github.com/CSC-DevOps/Deployment.git
+    git clone https://github.com/CSC-DevOps/Deployment.git\
+    cd Deployment
     npm install
     # Setup two virtual machines
     node index setup
