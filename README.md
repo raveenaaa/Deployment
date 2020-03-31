@@ -121,12 +121,20 @@ Push another change, "Hello Blue 2".  Now see if you can observe on the blue ser
 
 ### Add auto-switch over.
 
-Have the default TARGET to be BLUE now.
 
-Modify the app repo, to explicitly fail with : `res.status(500).send('Something broke!');`
+### Commit bad commit, trigger failover, revert bad change
 
-Have a heartbeat that checks every 30 second for a http 500, and if so, will switch the proxy over to the green environment.
+Modify the index route, to explicitly fail: `res.status(500).render(...`
 
-This idea can be generalized to be triggered by any other monitoring/alerts/automated testing (during staging). E.g., See how to use [toobusy](https://hacks.mozilla.org/2013/01/building-a-node-js-server-that-wont-melt-a-node-js-holiday-season-part-5/).
+Have a heartbeat that checks every 5 seconds for a http 500, and if so, will switch the proxy over to the green environment.
 
+
+
+```
+$ git revert HEAD
+[master 5edde92] Revert "bad commit"
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+$ git push green master
+```
 
