@@ -63,7 +63,7 @@ Place the following content inside:
 
 Repeat for `BLUE`.
 
-### Deploying Commits and Copying Bits
+### Setting git remotes
 
 On your host computer, clone the [meow.io repo](https://github.com/CSC-DevOps/meow.io), and set the following remotes, using the ssh protocol:
 
