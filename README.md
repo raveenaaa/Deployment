@@ -1,6 +1,6 @@
 # Deployment
 
-In this workshop, we'll cover the basics of setting up a barebone deployment pipeline, in support of a green-blue deployment strategy.
+In this workshop, we'll cover the basics of setting up a barebone deployment pipeline, in support of a green-blue deployment strategy. Concepts covered include green-blue deployment, automatic failover, feature flags, and data migration.
 
 *TODO:* Diagram for pipeline.
 
@@ -17,7 +17,13 @@ To start with, you'll need some files in this repo to help setup the blue-green 
     git clone https://github.com/CSC-DevOps/Deployment.git
     cd Deployment
     npm install
-    # Setup two virtual machines
+
+If you do not have the queues image, pull:
+
+    bakerx pull CSC-DevOps/Images#Spring2020 queues
+
+Setup two virtual machines.
+
     node index setup
 
 ### Setting up our Pipeline
