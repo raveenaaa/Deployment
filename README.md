@@ -94,6 +94,10 @@ npm start
 Visit http://192.168.44.25:3000 in your browser to see if meow.io is running!
 
 ### Settting up Infrastructure
+
+![setup](meow-deploy.png)
+
+
 Currently, we can deploy changes to our VM, but 
 Then bring up the infrastructure:
     node infrastructure
