@@ -175,7 +175,7 @@ $ git revert HEAD
 $ git push green master
 ```
 
-### Task 4: Flag
+### Task 4: Feature Flag
 
 Notice that meow.io is not currently displaying any recent images. Set the value `RECENT=ON` inside the redis server on the `BLUE` environment.
 
@@ -187,6 +187,10 @@ You should be able to see the feature turned on:
 
 A feature flag can be a powerful tool to assist with deployment. It can be used to fence off new features or quickly turn off buggy features without needing to rollback a commit.
 
-### Task 5: Sync
+### Task 5: Sync the database
 
+```
+ssh user@host 'sqlite3 "/path/to/db.sqlite" ".backup /path/to/dbbackup.sqlite"'
+rsync user@host:"/path/to/dbbackup.sqlite" "db.sqlite"
+```
 
