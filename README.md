@@ -2,7 +2,7 @@
 
 In this workshop, we'll cover the basics of setting up a barebone deployment pipeline, in support of a green-blue deployment strategy. Concepts covered include green-blue deployment, automatic failover, feature flags, and data migration.
 
-*TODO:* Diagram for pipeline.
+![blue-green-diagram](img/blue-green.png)
 
 ### Blue-green deployment
 
