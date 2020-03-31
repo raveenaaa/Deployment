@@ -28,7 +28,7 @@ We will first setup a basic pipeline that will have two deployment endpoints for
 
 We'll create two endpoints for our deployment, a "green" endpoint for our baseline, and a "blue" endpoint for our new production code.
 
-Inside green, `bakerx ssh green`, run:
+Inside `GREEN`, `bakerx ssh green`, run:
 
 ```bash
 mkdir -p meow.io/green.git meow.io/green-www
@@ -36,7 +36,7 @@ cd meow.io/green.git
 git init --bare
 ```
 
-Inside blue, `bakerx ssh blue`, run:
+Inside `BLUE`, `bakerx ssh blue`, run:
 
 ```bash
 mkdir -p meow.io/blue.git meow.io/blue-www
@@ -61,7 +61,7 @@ Place the following content inside:
     GIT_WORK_TREE=/home/vagrant/meow.io/green-www git checkout -f
     cd /home/vagrant/meow.io/green-www && npm install
 
-Repeat for blue.
+Repeat for `BLUE`.
 
 ### Deploying Commits and Copying Bits
 
@@ -78,7 +78,13 @@ You can now push changes in the following manner.
     git push green master
     git push blue master
 
-Here, by setting `GIT_SSH_COMMAND`, we are telling git to use our ssh key for connecting to the VM. For Windows 🔽, you will need to modify the command to use `set`, followed by a `&`: `set GIT_SSH_COMMAND=ssh -i ~/.bakerx/insecure_private_key & git push green master`
+Here, by setting `GIT_SSH_COMMAND`, we are telling git to use our ssh key for connecting to the VM. For Windows 🔽, you will need to modify the command to use `set`, and without quotes.
+
+```bash
+set GIT_SSH_COMMAND=ssh -i ~/.bakerx/insecure_private_key
+git push green master
+git push blue master
+```
 
 ### Testing deployment
 
@@ -92,25 +98,27 @@ node data/init.js
 npm start
 ```
 
-Visit http://192.168.44.25:3000 in your browser to see if meow.io is running!
+Visit http://192.168.44.25:3000 in your browser to see if meow.io 😻 is running!
 
-Repeat the same for the green environment.
+Repeat the same for the `GREEN` environment.
 
 ## Settting up Infrastructure
 
-Currently, we can deploy changes to our VM, but we have nothing the regulates the control of traffic, nor which TARGET is active. We will set up our infrastructure to fully handle a deployment, including automatic failover.
+Currently, we can deploy changes to our VM, but we have nothing the regulates the control of traffic, nor which `TARGET` is active. We will set up our infrastructure to fully handle a deployment, including automatic failover.
+
+You may want to setup your terminals to help you distinguish your `GREEN` and `BLUE` environments, as follows:
 
 ![setup](img/meow-deploy.png)
 
 ### Task 1: Configure Proxy
 
 We will be using our host environment coordinate our production environment with a proxy service. 
-Complete the proxy service by adding a redirect from `localhost:3080` to our TARGET production endpoint.
+Complete the proxy service by adding a redirect from `localhost:3080` to our `TARGET` production endpoint.
 
 ```js
 proxy.web( req, res, {target: self.TARGET } );
 ```
-To activate, run `node index.js serve`. Visiting http://localhost:3080 should redirect you to the GREEN production environment.
+To activate, run `node index.js serve`. Visiting http://localhost:3080 should redirect you to the `GREEN` production environment.
 
 
 ### Task 2: Configure process supervisor
@@ -130,25 +138,25 @@ forever stopall
 forever -w start ./bin/www
 ```
 
-Repeat for the green environment.
+Repeat for the green environment, `bakerx ssh green`.
 
-##### Trigger hooks
+##### Trigger hooks to run supervisor
 
 We are going to amend our last commit, to enable us to push and trigger our post-receive hooks.
 
-```
+```bash
 git commit --amend --no-edit
 git push blue master -f
 git push green master -f
 ```
 
-Our forever process should now running our web server without us needing to manually stop or start it.
+Our forever process should now running our web server without us needing to manually stop or start it. You can confirm with `forever list` on each server.
 
 ### Task 3: Add automatic failover
 
 In case a bad commit is pushed to our green environment, we want a way to automatically direct traffic back to our stable `BLUE` environment.
 
-We will accomplish this by adding a health monitor, which checks every 5 seconds if the GREEN environment has any failure. If failure does occur, then it will automatically switch the `TARGET` to the `BLUE` environment.
+We will accomplish this by adding a health monitor, which checks every 5 seconds if the `GREEN` environment has any failure. If failure does occur, then it will automatically switch the `TARGET` to the `BLUE` environment.
 
 Update the `healthCheck()` function to perform the switch.
 
@@ -156,7 +164,7 @@ Update the `healthCheck()` function to perform the switch.
 
 We will introduce a bad commit to the `GREEN` environment which should trigger our failure over.
 
-Modify the index route in meow.io, to explicitly fail: `res.status(500).render(...`
+Modify the index route in meow.io, to explicitly fail: `res.status(500).render(...`. Then commit and push the change:
 
 ```
 $ git add index.js
@@ -174,6 +182,8 @@ $ git revert HEAD
 
 $ git push green master
 ```
+
+Restart the `node index.js serve` process to restore traffic to the `GREEN` environment.
 
 ### Task 4: Feature Flag
 
@@ -205,9 +215,9 @@ While simple, the strategy might harm service availability and data durability, 
 
 **Strategy 2**: Migrate missing rows table by table.
 
-Missing rows can be appended to the BLUE database. This can be done before or after making switching. This strategy could effect consistency of the data.
+Missing rows can be appended to the `BLUE` database. This can be done before or after making switching. This strategy could effect consistency of the data.
 
 **Strategy 3**: Mirror data.
 
-Having the GREEN database mirror the data to the BLUE database allows the system to move data over during normal operation, and not during an emergency switch. Unfortunately, sqlite does not support mirroring, however, the code could be modified to mimic mirroring, or a real database system could be used instead.
+Having the `GREEN` database mirror the data to the `BLUE` database allows the system to move data over during normal operation, and not during an emergency switch. Unfortunately, sqlite does not support mirroring, however, the code could be modified to mimic mirroring, or a real database system could be used instead.
 
