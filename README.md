@@ -175,8 +175,17 @@ $ git revert HEAD
 $ git push green master
 ```
 
-### Task 4: Flag?
+### Task 4: Flag
 
+Notice that meow.io is not currently displaying any recent images. Set the value `RECENT=ON` inside the redis server on the `BLUE` environment.
+
+![img/meow.io-off.png]
+
+You should be able to see the feature turned on:
+
+![img/meow.io-flag.png]
+
+A feature flag can be a powerful tool to assist with deployment. It can be used to fence off new features or quickly turn off buggy features without needing to rollback a commit.
 
 ### Task 5: Sync
 
