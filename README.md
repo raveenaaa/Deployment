@@ -187,10 +187,27 @@ You should be able to see the feature turned on:
 
 A feature flag can be a powerful tool to assist with deployment. It can be used to fence off new features or quickly turn off buggy features without needing to rollback a commit.
 
-### Task 5: Sync the database
+### Task 5: Extra---Sync/migrate the database
 
+Our infrastructure handles a lot now, but there is one detail missing. If a switch occurs while the `GREEN` environment received data, that data would be lost when switching back to the `BLUE` environment.
+
+We have three possible strategies we can add to handle this which making the switch over.
+
+**Strategy 1**: Copy database file.
+
+This strategy will dump and then move over the whole sqlite database.
+```bash
+sqlite3 "/home/vagrant/green-www/data/meowio.db" ".backup /tmp/dbbackup.sqlite"
+rsync vagrant@BLUE:"/tmp/dbbackup.sqlite" "/home/vagrant/blue-www/data/meowio.db"
 ```
-ssh user@host 'sqlite3 "/path/to/db.sqlite" ".backup /path/to/dbbackup.sqlite"'
-rsync user@host:"/path/to/dbbackup.sqlite" "db.sqlite"
-```
+
+While simple, the strategy might harm service availability and data durability, as the whole dataset must be copied before serving traffic, and there may be data corruption.
+
+**Strategy 2**: Migrate missing rows table by table.
+
+Missing rows can be appended to the BLUE database. This can be done before or after making switching. This strategy could effect consistency of the data.
+
+**Strategy 3**: Mirror data.
+
+Having the GREEN database mirror the data to the BLUE database allows the system to move data over during normal operation, and not during an emergency switch. Unfortunately, sqlite does not support mirroring, however, the code could be modified to mimic mirroring, or a real database system could be used instead.
 
