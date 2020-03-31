@@ -74,8 +74,9 @@ On your host computer, clone the [meow.io repo](https://github.com/CSC-DevOps/me
 
 You can now push changes in the following manner.
 
-    GIT_SSH_COMMAND="ssh -i ~/.bakerx/insecure_private_key" git push green master
-    GIT_SSH_COMMAND="ssh -i ~/.bakerx/insecure_private_key" git push blue master
+    GIT_SSH_COMMAND="ssh -i ~/.bakerx/insecure_private_key" 
+    git push green master
+    git push blue master
 
 Here, by setting `GIT_SSH_COMMAND`, we are telling git to use our ssh key for connecting to the VM. For Windows 🔽, you will need to modify the command to use `set`, followed by a `&`: `set GIT_SSH_COMMAND=ssh -i ~/.bakerx/insecure_private_key & git push green master`
 
@@ -93,43 +94,79 @@ npm start
 
 Visit http://192.168.44.25:3000 in your browser to see if meow.io is running!
 
-### Settting up Infrastructure
+Repeat the same for the green environment.
+
+## Settting up Infrastructure
+
+Currently, we can deploy changes to our VM, but we have nothing the regulates the control of traffic, nor which TARGET is active. We will set up our infrastructure to fully handle a deployment, including automatic failover.
 
 ![setup](img/meow-deploy.png)
 
+### Task 1: Configure Proxy
 
-Currently, we can deploy changes to our VM, but 
-Then bring up the infrastructure:
-    node infrastructure
-### Deploy a change.
-Change the message to report, "Hello Blue".  
-Push the change.
+We will be using our host environment coordinate our production environment with a proxy service. 
+Complete the proxy service by adding a redirect from `localhost:3080` to our TARGET production endpoint.
 
-### Deploy a change.
-
-Change the message to report, "Hello Blue".  
-
-Push the change.
-
-Test the blue server directly, using port 9090.
-
-Notice, it hasn't updated yet...
-
-You will need to modify how "forever" is run, by including a "--watch" flag which will restart the process if the file it is running changes.  Think carefully on where to place the flag.  You may also need to use "--watchDirectory" depending on where you have placed the deploy folders.
-
-Push another change, "Hello Blue 2".  Now see if you can observe on the blue server.
-
-### Add auto-switch over.
+```js
+proxy.web( req, res, {target: self.TARGET } );
+```
+To activate, run `node index.js serve`. Visiting http://localhost:3080 should redirect you to the GREEN production environment.
 
 
-### Commit bad commit, trigger failover, revert bad change
+### Task 2: Configure process supervisor
 
-Modify the index route, to explicitly fail: `res.status(500).render(...`
+We want our environment to automatically restart the web server when a push is made.
 
-Have a heartbeat that checks every 5 seconds for a http 500, and if so, will switch the proxy over to the green environment.
+Inside the blue environment, `bakerx ssh blue`, install forever:
 
+```
+sudo npm install forever -g
+```
 
+We will then append the following to our post-receive hook:
 
+```bash
+forever stopall
+forever -w start ./bin/www
+```
+
+Repeat for the green environment.
+
+##### Trigger hooks
+
+We are going to amend our last commit, to enable us to push and trigger our post-receive hooks.
+
+```
+git commit --amend --no-edit
+git push blue master -f
+git push green master -f
+```
+
+Our forever process should now running our web server without us needing to manually stop or start it.
+
+### Task 3: Add automatic failover
+
+In case a bad commit is pushed to our green environment, we want a way to automatically direct traffic back to our stable `BLUE` environment.
+
+We will accomplish this by adding a health monitor, which checks every 5 seconds if the GREEN environment has any failure. If failure does occur, then it will automatically switch the `TARGET` to the `BLUE` environment.
+
+Update the `healthCheck()` function to perform the switch.
+
+##### Commit bad commit, trigger failover, revert bad change
+
+We will introduce a bad commit to the `GREEN` environment which should trigger our failure over.
+
+Modify the index route in meow.io, to explicitly fail: `res.status(500).render(...`
+
+```
+$ git add index.js
+$ git commit -m "bad commit"
+$ git push green master
+```
+
+You should observe your failover being triggered---traffic should now be served from the `BLUE` environment.
+
+We can use this chance to patch production and revert our bad commit:
 ```
 $ git revert HEAD
 [master 5edde92] Revert "bad commit"
@@ -137,4 +174,10 @@ $ git revert HEAD
 
 $ git push green master
 ```
+
+### Task 4: Flag?
+
+
+### Task 5: Sync
+
 
