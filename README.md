@@ -14,6 +14,8 @@ There are several benefits of this using this strategy for deployment. Having tw
 
 Downsides also exist. There is a considerable amount of overhead in infrastructure---you are paying at least 2x in terms of infrastructure, including extra capacity used for robustness. Having duplication instances also raises considers with data migration. If you switch versions, how do you ensure consistency and durability of the data? Now you also need to ensure data is mirrored or data migration occurs. Do not forget to overlook certain places data can be misplaced (such as data being queued in a memory-store such as redis).
 
+Finally, when combined with feature flags, new features and problematic changes can be isolated with a simple flag toggle---allowing finer grain control of deployments without requiring a full flip between production instances. For example, consider a release that includes five new features updates, four of which work well while one is broken. A team can now make the decision whether to simply turn off the buggy feature rather than switching everything to the old stable environment. One the other hand, if that buggy feature caused stability issues for the entire system, an environment flip might be the better option.
+
 ## Workshop
 
 ### Before you start
