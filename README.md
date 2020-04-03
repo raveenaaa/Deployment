@@ -77,6 +77,8 @@ Place the following content inside:
 
 Repeat for `BLUE`.
 
+> Note: when repeating for `BLUE` make sure to update the paths inside `post-receive` hook.
+
 ### Setting git remotes
 
 On your host computer, clone the [meow.io repo](https://github.com/CSC-DevOps/meow.io), and set the following remotes, using the ssh protocol:
@@ -118,7 +120,7 @@ Repeat the same for the `GREEN` environment.
 
 ## Settting up Infrastructure
 
-Currently, we can deploy changes to our different VMs---however---we have nothing the regulates the control of traffic, nor logic which determines which `TARGET` is active. We will set up our infrastructure to fully handle a deployment, including automatic failover.
+Currently, we can deploy changes to our different VMs---however---we have nothing that regulates the control of traffic, nor logic which determines which `TARGET` is active. We will set up our infrastructure to fully handle a deployment, including automatic failover.
 
 You may want to setup your terminals to help you distinguish your `GREEN` and `BLUE` environments, as follows:
 

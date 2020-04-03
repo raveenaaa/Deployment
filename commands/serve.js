@@ -55,7 +55,7 @@ class Production
    {
       try 
       {
-         const response = await got(this.TARGET);
+         const response = await got(this.TARGET, {throwHttpErrors: false});
          let status = response.statusCode == 200 ? chalk.green(response.statusCode) : chalk.red(response.statusCode);
          console.log( chalk`{grey Health check on ${this.TARGET}}: ${status}`);
       }
