@@ -42,6 +42,7 @@ class Production
         let server  = http.createServer(function(req, res)
         {
             // callback for redirecting requests.
+            proxy.web( req, res, {target: self.TARGET } );
         });
         server.listen(3080);
    }
@@ -58,9 +59,13 @@ class Production
          const response = await got(this.TARGET, {throwHttpErrors: false});
          let status = response.statusCode == 200 ? chalk.green(response.statusCode) : chalk.red(response.statusCode);
          console.log( chalk`{grey Health check on ${this.TARGET}}: ${status}`);
+         if (status != 200) {
+            //   Switch to BLUE
+         this.failover();
+         }
       }
       catch (error) {
-         console.log(error);
+        console.log(error);
       }
    }
    
